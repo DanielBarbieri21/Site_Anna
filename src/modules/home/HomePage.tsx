@@ -17,6 +17,7 @@ const fallbackPosts: HomePost[] = [
       'Toda noite, às 23h14, as paredes pareciam se inclinar um pouco mais para ouvir o silêncio...',
     categoria: 'contos',
     tempo_leitura: 6,
+    slug: 'a-casa-que-respirava-memorias',
   },
   {
     id: '2',
@@ -25,6 +26,7 @@ const fallbackPosts: HomePost[] = [
       'Escrevo na borda do travesseiro, porque é ali que os pensamentos se deitam primeiro.',
     categoria: 'cronicas',
     tempo_leitura: 4,
+    slug: 'cartas-que-nunca-enviei-para-mim',
   },
 ]
 
