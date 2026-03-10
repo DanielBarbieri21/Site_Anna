@@ -179,7 +179,13 @@ function SecaoForm({
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    onSave({ titulo, descricao, perfil_url: perfilUrl || null, itens })
+    const itensValidos = itens.filter(item => item.url && item.url.trim().length > 0)
+    onSave({
+      titulo: titulo || null,
+      descricao: descricao || null,
+      perfil_url: perfilUrl || null,
+      itens: itensValidos,
+    })
   }
 
   function addItem(tipo: EmbedItem['tipo']) {

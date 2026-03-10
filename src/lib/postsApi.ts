@@ -119,21 +119,33 @@ export async function getPublishedPostById(id: string): Promise<CMSPost | null> 
   return post.publicado ? post : null
 }
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
 export async function getPublishedPostBySlugOrId(
   slugOrId: string
 ): Promise<CMSPost | null> {
-  const { data, error } = await supabase
-    .from('posts')
-    .select('*')
-    .or(`slug.eq.${slugOrId},id.eq.${slugOrId}`)
+  const trimmed = slugOrId.trim()
+  if (UUID_REGEX.test(trimmed)) {
+    return getPublishedPostById(trimmed)
+  }
+  try {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('slug', trimmed)
+      .maybeSingle()
 
-  if (error) throw error
-
-  const first = (data ?? [])[0] as UnknownRow | undefined
-  if (!first) return null
-
-  const post = normalizePost(first)
-  return post.publicado ? post : null
+    if (error) {
+      return getPublishedPostById(trimmed)
+    }
+    const first = data as UnknownRow | undefined
+    if (!first) return null
+    const post = normalizePost(first)
+    return post.publicado ? post : null
+  } catch {
+    return getPublishedPostById(trimmed)
+  }
 }
 
 export async function listPostsForAuthor(authorId: string): Promise<CMSPost[]> {
@@ -156,10 +168,30 @@ export type PostPayload = {
   slug: string | null
 }
 
+function sanitizePayload<T extends Record<string, unknown>>(obj: T): T {
+  const out = { ...obj }
+  for (const key of Object.keys(out)) {
+    if (out[key] === undefined) (out as Record<string, unknown>)[key] = null
+  }
+  return out
+}
+
 export async function createPost(payload: PostPayload): Promise<CMSPost> {
+  const slugVal =
+    payload.slug && payload.slug.trim() ? payload.slug.trim() : null
+  const row = sanitizePayload({
+    titulo: payload.titulo,
+    resumo: payload.resumo || null,
+    conteudo: payload.conteudo,
+    categoria: payload.categoria || 'contos',
+    publicado: payload.publicado,
+    autor_id: payload.autor_id,
+    tempo_leitura: payload.tempo_leitura,
+    ...(slugVal != null && { slug: slugVal }),
+  })
   const { data, error } = await supabase
     .from('posts')
-    .insert(payload)
+    .insert(row)
     .select('*')
     .single()
 
@@ -171,9 +203,20 @@ export async function updatePost(
   id: string,
   payload: Omit<PostPayload, 'autor_id'>
 ): Promise<CMSPost> {
+  const slugVal =
+    payload.slug && payload.slug.trim() ? payload.slug.trim() : null
+  const row = sanitizePayload({
+    titulo: payload.titulo,
+    resumo: payload.resumo || null,
+    conteudo: payload.conteudo,
+    categoria: payload.categoria || 'contos',
+    publicado: payload.publicado,
+    tempo_leitura: payload.tempo_leitura,
+    ...(slugVal != null && { slug: slugVal }),
+  })
   const { data, error } = await supabase
     .from('posts')
-    .update(payload)
+    .update(row)
     .eq('id', id)
     .select('*')
     .single()

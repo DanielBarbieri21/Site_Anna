@@ -175,7 +175,11 @@ export function DashboardPage() {
       setEditor(initialState)
     } catch (err) {
       console.error(err)
-      setError(formatError(err, 'Falha ao salvar no CMS.'))
+      const msg = formatError(err, 'Falha ao salvar no CMS.')
+      setError(
+        msg +
+          ' Se o erro for 400, confira no Supabase se a tabela posts tem a coluna slug (rode supabase/posts_schema.sql).'
+      )
     } finally {
       setSaving(false)
     }
@@ -446,7 +450,15 @@ export function DashboardPage() {
                 <p className="mt-1 line-clamp-2 text-xs text-[#aab7d2]">
                   {post.resumo || 'Sem resumo'}
                 </p>
-                <div className="mt-3 flex items-center gap-2 text-[11px]">
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
+                  <Link
+                    to={`/post/${post.slug ?? post.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border border-slate-600 px-2.5 py-1 text-[#d6e0f3] hover:border-[#baa78c91]"
+                  >
+                    Ver
+                  </Link>
                   <button
                     type="button"
                     onClick={() => startEdit(post)}

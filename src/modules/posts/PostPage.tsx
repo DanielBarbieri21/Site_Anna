@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { getPublishedPostBySlugOrId, type CMSPost } from '../../lib/postsApi'
 
 export function PostPage() {
@@ -45,11 +45,25 @@ export function PostPage() {
 
   if (!post) {
     return (
-      <div className="card-surface max-w-xl space-y-2">
+      <div className="card-surface max-w-xl space-y-4">
         <h1 className="text-2xl font-semibold text-[#f6efe2]">Texto não encontrado</h1>
         <p className="text-sm text-[#9cabca]">
-          Esse conteúdo pode estar como rascunho no CMS ou foi removido.
+          Esse conteúdo pode estar como rascunho no painel ou foi removido.
         </p>
+        <div className="flex flex-wrap gap-2 text-sm">
+          <Link
+            to="/"
+            className="rounded-full border border-slate-600/70 px-3 py-1.5 text-[#d4deef] hover:border-[#baa78c91]"
+          >
+            Voltar ao início
+          </Link>
+          <Link
+            to="/busca"
+            className="rounded-full border border-slate-600/70 px-3 py-1.5 text-[#d4deef] hover:border-[#baa78c91]"
+          >
+            Buscar textos
+          </Link>
+        </div>
       </div>
     )
   }
