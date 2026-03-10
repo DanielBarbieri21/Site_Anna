@@ -32,6 +32,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
               Início
             </NavLink>
             <NavLink
+              to="/sobre"
+              className={({ isActive }) =>
+                `rounded-full px-2.5 py-1.5 transition ${
+                  isActive
+                    ? 'bg-[#6a738f2e] font-medium text-[#f2eadc]'
+                    : 'text-[#b9c3d9] hover:text-[#f2eadc]'
+                }`
+              }
+            >
+              Sobre
+            </NavLink>
+            <NavLink
               to="/categoria/contos"
               className={({ isActive }) =>
                 `rounded-full px-2.5 py-1.5 transition ${
@@ -55,18 +67,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               Poesias
             </NavLink>
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) =>
-                `rounded-full px-2.5 py-1.5 transition ${
-                  isActive
-                    ? 'bg-[#6a738f2e] font-medium text-[#f2eadc]'
-                    : 'text-[#b9c3d9] hover:text-[#f2eadc]'
-                }`
-              }
-            >
-              Dashboard
-            </NavLink>
+            {user?.role === 'author' && (
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  `rounded-full px-2.5 py-1.5 transition ${
+                    isActive
+                      ? 'bg-[#6a738f2e] font-medium text-[#f2eadc]'
+                      : 'text-[#b9c3d9] hover:text-[#f2eadc]'
+                  }`
+                }
+              >
+                Painel
+              </NavLink>
+            )}
             {user ? (
               <div className="flex items-center gap-2">
                 <span className="rounded-full border border-slate-600/70 px-3 py-1.5 text-[11px] uppercase tracking-[0.13em] text-[#d3dcee]">

@@ -14,6 +14,7 @@ alter table public.posts
   add column if not exists categoria text default 'contos',
   add column if not exists publicado boolean default false,
   add column if not exists tempo_leitura integer,
+  add column if not exists slug text,
   add column if not exists created_at timestamptz default timezone('utc', now()),
   add column if not exists updated_at timestamptz default timezone('utc', now());
 
@@ -40,6 +41,7 @@ alter table public.posts
 create index if not exists posts_autor_id_idx on public.posts (autor_id);
 create index if not exists posts_publicado_idx on public.posts (publicado, created_at desc);
 create index if not exists posts_categoria_idx on public.posts (categoria);
+create index if not exists posts_slug_idx on public.posts (slug) where slug is not null;
 
 create or replace function public.touch_posts_updated_at()
 returns trigger as $$
@@ -63,10 +65,18 @@ on public.posts
 for select
 using (publicado = true);
 
--- Dono pode gerenciar seus proprios posts.
+-- Dono pode gerenciar seus proprios posts (insert/update/delete e leitura de rascunhos).
 drop policy if exists "Author can manage own posts" on public.posts;
 create policy "Author can manage own posts"
 on public.posts
 for all
 using (auth.uid() = autor_id)
 with check (auth.uid() = autor_id);
+
+-- Resumo RLS:
+-- - SELECT: qualquer um ve posts publicados; autenticado ve tambem os proprios (incl. rascunhos).
+-- - INSERT: so se autor_id = auth.uid() (app envia o id do usuario logado).
+-- - UPDATE/DELETE: so o dono (auth.uid() = autor_id).
+--
+-- Realtime (lista da home): no dashboard do Supabase, Database -> Replication,
+-- habilite a tabela public.posts para ver novos posts na home sem recarregar.

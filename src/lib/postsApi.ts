@@ -11,6 +11,7 @@ export type CMSPost = {
   updated_at: string | null
   autor_id: string | null
   tempo_leitura: number | null
+  slug: string | null
 }
 
 type UnknownRow = Record<string, unknown>
@@ -27,10 +28,23 @@ function asNumber(value: unknown): number | null {
   return typeof value === 'number' ? value : null
 }
 
+function toSlug(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80)
+}
+
 function normalizePost(row: UnknownRow): CMSPost {
+  const rawTitle = asString(row.titulo) ?? asString(row.title) ?? 'Sem titulo'
+  const rawSlug = asString((row as UnknownRow).slug)
+
   return {
     id: asString(row.id) ?? crypto.randomUUID(),
-    titulo: asString(row.titulo) ?? asString(row.title) ?? 'Sem titulo',
+    titulo: rawTitle,
     resumo: asString(row.resumo) ?? asString(row.excerpt),
     conteudo: asString(row.conteudo) ?? asString(row.content) ?? '',
     categoria: asString(row.categoria) ?? asString(row.category),
@@ -42,6 +56,7 @@ function normalizePost(row: UnknownRow): CMSPost {
     updated_at: asString(row.updated_at) ?? asString(row.updatedAt),
     autor_id: asString(row.autor_id) ?? asString(row.author_id),
     tempo_leitura: asNumber(row.tempo_leitura) ?? asNumber(row.read_time),
+    slug: rawSlug && rawSlug.trim().length > 0 ? rawSlug : toSlug(rawTitle),
   }
 }
 
@@ -87,6 +102,23 @@ export async function getPublishedPostById(id: string): Promise<CMSPost | null> 
   return post.publicado ? post : null
 }
 
+export async function getPublishedPostBySlugOrId(
+  slugOrId: string
+): Promise<CMSPost | null> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select('*')
+    .or(`slug.eq.${slugOrId},id.eq.${slugOrId}`)
+
+  if (error) throw error
+
+  const first = (data ?? [])[0] as UnknownRow | undefined
+  if (!first) return null
+
+  const post = normalizePost(first)
+  return post.publicado ? post : null
+}
+
 export async function listPostsForAuthor(authorId: string): Promise<CMSPost[]> {
   const { data, error } = await supabase.from('posts').select('*')
 
@@ -104,6 +136,7 @@ export type PostPayload = {
   publicado: boolean
   autor_id: string
   tempo_leitura: number | null
+  slug: string | null
 }
 
 export async function createPost(payload: PostPayload): Promise<CMSPost> {

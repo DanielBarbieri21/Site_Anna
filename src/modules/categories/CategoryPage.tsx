@@ -59,7 +59,7 @@ export function CategoryPage() {
           {posts.map(post => (
             <Link
               key={post.id}
-              to={`/post/${post.id}`}
+              to={`/post/${post.slug ?? post.id}`}
               className="card-surface block space-y-2"
             >
               <p className="text-[11px] uppercase tracking-[0.15em] text-[#8e9bb8]">

@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { listPublishedPosts, type CMSPost } from '../../lib/postsApi'
+import { supabase } from '../../lib/supabaseClient'
 
 type HomePost = Pick<
   CMSPost,
-  'id' | 'titulo' | 'resumo' | 'categoria' | 'tempo_leitura'
+  'id' | 'titulo' | 'resumo' | 'categoria' | 'tempo_leitura' | 'slug'
 >
 
 const fallbackPosts: HomePost[] = [
@@ -48,8 +49,20 @@ export function HomePage() {
     }
 
     loadPosts()
+    const channel = supabase
+      .channel('public:posts-home-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'posts' },
+        () => {
+          void loadPosts()
+        }
+      )
+      .subscribe()
+
     return () => {
       active = false
+      void supabase.removeChannel(channel)
     }
   }, [])
 
@@ -116,7 +129,7 @@ export function HomePage() {
             {recentPosts.map(post => (
               <Link
                 key={post.id}
-                to={`/post/${post.id}`}
+                to={`/post/${post.slug ?? post.id}`}
                 className="block rounded-2xl border border-slate-700/40 bg-[#111827b8] p-5 transition hover:-translate-y-0.5 hover:border-[#baa78c91]"
               >
                 <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.17em] text-[#98a5c2]">

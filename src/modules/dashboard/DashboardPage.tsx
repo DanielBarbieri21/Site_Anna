@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import {
   createPost,
@@ -47,9 +48,12 @@ function formatError(error: unknown, fallback: string): string {
 
 export function DashboardPage() {
   const { user, loading, signOut } = useAuth()
+  const navigate = useNavigate()
   const [posts, setPosts] = useState<CMSPost[]>([])
   const [loadingPosts, setLoadingPosts] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [autoSaving, setAutoSaving] = useState(false)
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [editingPostId, setEditingPostId] = useState<string | null>(null)
@@ -59,6 +63,12 @@ export function DashboardPage() {
     if (!user) return
     void refreshPosts(user.id)
   }, [user])
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/login')
+    }
+  }, [loading, user, navigate])
 
   async function refreshPosts(authorId: string) {
     setLoadingPosts(true)
@@ -132,6 +142,16 @@ export function DashboardPage() {
         tempo_leitura: Number.isNaN(Number(editor.tempoLeitura))
           ? null
           : Number(editor.tempoLeitura),
+        slug: editor.titulo.trim()
+          ? editor.titulo
+              .trim()
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '')
+              .slice(0, 80)
+          : null,
       }
 
       if (!payload.titulo || !payload.conteudo) {
@@ -161,6 +181,79 @@ export function DashboardPage() {
     }
   }
 
+  // Salvamento automático de rascunho no Supabase
+  useEffect(() => {
+    if (!user) return
+
+    const hasContent =
+      editor.titulo.trim().length > 0 || editor.conteudo.trim().length > 0
+    if (!hasContent) return
+
+    const handler = window.setTimeout(async () => {
+      setAutoSaving(true)
+      setError(null)
+
+      try {
+        const payload = {
+          titulo: editor.titulo.trim(),
+          resumo: editor.resumo.trim(),
+          conteudo: editor.conteudo.trim(),
+          categoria: editor.categoria.trim().toLowerCase(),
+          publicado: editor.publicado,
+          tempo_leitura: Number.isNaN(Number(editor.tempoLeitura))
+            ? null
+            : Number(editor.tempoLeitura),
+          slug: editor.titulo.trim()
+            ? editor.titulo
+                .trim()
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                .slice(0, 80)
+            : null,
+        }
+
+        if (!payload.titulo || !payload.conteudo) {
+          setAutoSaving(false)
+          return
+        }
+
+        if (editingPostId) {
+          const updated = await updatePost(editingPostId, payload)
+          setPosts(prev =>
+            prev.map(post => (post.id === updated.id ? updated : post))
+          )
+        } else {
+          const created = await createPost({
+            ...payload,
+            autor_id: user.id,
+          })
+          setEditingPostId(created.id)
+          setPosts(prev => [created, ...prev])
+        }
+
+        const now = new Date()
+        const formatted = now.toLocaleTimeString('pt-BR', {
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+        setLastSavedAt(formatted)
+        setInfo('Rascunho salvo automaticamente.')
+      } catch (err) {
+        console.error(err)
+        setError(formatError(err, 'Falha ao salvar rascunho automaticamente.'))
+      } finally {
+        setAutoSaving(false)
+      }
+    }, 2000)
+
+    return () => {
+      window.clearTimeout(handler)
+    }
+  }, [editor, user, editingPostId])
+
   if (loading) {
     return (
       <div className="space-y-3">
@@ -178,6 +271,25 @@ export function DashboardPage() {
           Para acessar o painel de criação, faça login com seu e-mail ou conta
           Google. Assim que estiver autenticada, você poderá criar, editar e
           publicar textos diretamente daqui.
+        </p>
+      </div>
+    )
+  }
+
+  if (user.role !== 'author') {
+    return (
+      <div className="max-w-md space-y-4 rounded-2xl border border-slate-700/70 bg-[#0b1220] p-6 text-sm text-[#d5dff3]">
+        <p className="font-semibold">Área exclusiva da autora</p>
+        <p>
+          Este painel é reservado para a autora responsável pelas publicações. Você está autenticada(o)
+          como <span className="font-mono">{user.email}</span>, mas sem permissão de edição.
+        </p>
+        <p className="text-xs text-[#9cabca]">
+          Caso seja a autora principal do projeto, configure o e-mail em{' '}
+          <code className="rounded bg-[#020617] px-1.5 py-0.5">
+            VITE_AUTHOR_EMAIL
+          </code>{' '}
+          no arquivo de variáveis de ambiente da aplicação.
         </p>
       </div>
     )
@@ -209,8 +321,16 @@ export function DashboardPage() {
 
       {(error || info) && (
         <div className="space-y-2 text-sm">
-          {error && <p className="rounded-xl border border-rose-500/40 bg-rose-900/20 px-3 py-2 text-rose-100">{error}</p>}
-          {info && <p className="rounded-xl border border-emerald-500/40 bg-emerald-900/20 px-3 py-2 text-emerald-100">{info}</p>}
+          {error && (
+            <p className="rounded-xl border border-rose-500/40 bg-rose-900/20 px-3 py-2 text-rose-100">
+              {error}
+            </p>
+          )}
+          {info && (
+            <p className="rounded-xl border border-emerald-500/40 bg-emerald-900/20 px-3 py-2 text-emerald-100">
+              {info}
+            </p>
+          )}
         </div>
       )}
 
@@ -220,6 +340,12 @@ export function DashboardPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8f9bb5]">
               {editingPostId ? 'editando post' : 'novo post'}
             </p>
+            <div className="flex items-center gap-3 text-[11px] text-[#8f9bb5]">
+              {autoSaving && <span>Salvando rascunho...</span>}
+              {!autoSaving && lastSavedAt && (
+                <span>Rascunho salvo às {lastSavedAt}</span>
+              )}
+            </div>
             <button
               type="button"
               onClick={startNewPost}

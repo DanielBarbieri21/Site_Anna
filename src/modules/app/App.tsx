@@ -5,9 +5,12 @@ import { PostPage } from '../posts/PostPage'
 import { AuthorPage } from '../authors/AuthorPage'
 import { CategoryPage } from '../categories/CategoryPage'
 import { LoginPage } from '../auth/LoginPage'
+import { AboutPage } from '../about/AboutPage'
+import { RegisterPage } from '../auth/RegisterPage'
 import { DashboardPage } from '../dashboard/DashboardPage'
 import { Layout } from '../../shared/Layout'
 import { AuthProvider } from '../auth/AuthContext'
+import { NotFoundPage } from './NotFoundPage'
 
 const pageVariants = {
   initial: { opacity: 0, y: 8 },
@@ -32,11 +35,14 @@ export function App() {
         >
           <Routes location={location}>
             <Route path="/" element={<HomePage />} />
-            <Route path="/post/:id" element={<PostPage />} />
+            <Route path="/post/:idOrSlug" element={<PostPage />} />
             <Route path="/autor/:id" element={<AuthorPage />} />
             <Route path="/categoria/:slug" element={<CategoryPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/registrar" element={<RegisterPage />} />
+            <Route path="/sobre" element={<AboutPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </motion.main>
       </Layout>

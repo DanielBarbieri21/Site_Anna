@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { getPublishedPostById, type CMSPost } from '../../lib/postsApi'
+import { getPublishedPostBySlugOrId, type CMSPost } from '../../lib/postsApi'
 
 export function PostPage() {
-  const { id } = useParams()
+  const { idOrSlug } = useParams()
   const [post, setPost] = useState<CMSPost | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -11,11 +11,11 @@ export function PostPage() {
     let active = true
 
     async function loadPost() {
-      if (!id) return
+      if (!idOrSlug) return
 
       setLoading(true)
       try {
-        const data = await getPublishedPostById(id)
+        const data = await getPublishedPostBySlugOrId(idOrSlug)
         if (active) setPost(data)
       } catch (error) {
         if (active) setPost(null)
@@ -29,7 +29,7 @@ export function PostPage() {
     return () => {
       active = false
     }
-  }, [id])
+  }, [idOrSlug])
 
   const paragraphs = useMemo(() => {
     if (!post?.conteudo) return []
