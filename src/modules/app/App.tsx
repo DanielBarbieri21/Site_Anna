@@ -6,8 +6,14 @@ import { AuthorPage } from '../authors/AuthorPage'
 import { CategoryPage } from '../categories/CategoryPage'
 import { LoginPage } from '../auth/LoginPage'
 import { AboutPage } from '../about/AboutPage'
+import { AboutEditPage } from '../about/AboutEditPage'
+import { BuscaPage } from '../busca/BuscaPage'
+import { MusicaPage } from '../secoes/MusicaPage'
+import { FotosPage } from '../secoes/FotosPage'
+import { VideosPage } from '../secoes/VideosPage'
 import { RegisterPage } from '../auth/RegisterPage'
 import { DashboardPage } from '../dashboard/DashboardPage'
+import { DashboardSecoesPage } from '../dashboard/DashboardSecoesPage'
 import { Layout } from '../../shared/Layout'
 import { AuthProvider } from '../auth/AuthContext'
 import { NotFoundPage } from './NotFoundPage'
@@ -41,7 +47,13 @@ export function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/registrar" element={<RegisterPage />} />
             <Route path="/sobre" element={<AboutPage />} />
+            <Route path="/sobre/editar" element={<AboutEditPage />} />
+            <Route path="/busca" element={<BuscaPage />} />
+            <Route path="/musica" element={<MusicaPage />} />
+            <Route path="/fotos" element={<FotosPage />} />
+            <Route path="/videos" element={<VideosPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dashboard/secoes" element={<DashboardSecoesPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </motion.main>

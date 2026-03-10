@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import {
   createPost,
@@ -266,30 +266,10 @@ export function DashboardPage() {
   if (!user) {
     return (
       <div className="max-w-md space-y-4 rounded-2xl border border-amber-500/40 bg-amber-900/20 p-6 text-sm text-amber-100">
-        <p className="font-semibold">Área reservada para autora</p>
+        <p className="font-semibold">Faça login para publicar</p>
         <p>
-          Para acessar o painel de criação, faça login com seu e-mail ou conta
-          Google. Assim que estiver autenticada, você poderá criar, editar e
-          publicar textos diretamente daqui.
-        </p>
-      </div>
-    )
-  }
-
-  if (user.role !== 'author') {
-    return (
-      <div className="max-w-md space-y-4 rounded-2xl border border-slate-700/70 bg-[#0b1220] p-6 text-sm text-[#d5dff3]">
-        <p className="font-semibold">Área exclusiva da autora</p>
-        <p>
-          Este painel é reservado para a autora responsável pelas publicações. Você está autenticada(o)
-          como <span className="font-mono">{user.email}</span>, mas sem permissão de edição.
-        </p>
-        <p className="text-xs text-[#9cabca]">
-          Caso seja a autora principal do projeto, configure o e-mail em{' '}
-          <code className="rounded bg-[#020617] px-1.5 py-0.5">
-            VITE_AUTHOR_EMAIL
-          </code>{' '}
-          no arquivo de variáveis de ambiente da aplicação.
+          Entre com seu e-mail ou conta Google para acessar o painel. Depois você
+          poderá criar e publicar contos, histórias e poesias.
         </p>
       </div>
     )
@@ -300,23 +280,30 @@ export function DashboardPage() {
       <header className="flex items-center justify-between">
         <div className="space-y-1.5">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#98a5c2]">
-            painel da autora
+            seu painel
           </p>
           <h1 className="text-3xl font-semibold tracking-tight text-[#f7efe1]">
-            CMS literário
+            Publicar conto, história ou poesia
           </h1>
           <p className="text-sm text-[#b2bed6]">
-            Olá, {user.email}. Gerencie rascunhos, publicações e categorias com
-            fluxo profissional.
+            Olá! Crie rascunhos, publique textos e escolha a categoria (contos, crônicas, poesias).
           </p>
         </div>
-        <button
-          type="button"
-          onClick={signOut}
-          className="rounded-full border border-slate-600/70 px-3 py-1.5 text-[11px] font-medium tracking-wide text-[#d4deef] transition hover:border-rose-400 hover:text-rose-200"
-        >
-          Sair
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/dashboard/secoes"
+            className="rounded-full border border-slate-600/70 px-3 py-1.5 text-[11px] font-medium tracking-wide text-[#d4deef] transition hover:border-[#baa78c91]"
+          >
+            Música, Fotos e Vídeos
+          </Link>
+          <button
+            type="button"
+            onClick={signOut}
+            className="rounded-full border border-slate-600/70 px-3 py-1.5 text-[11px] font-medium tracking-wide text-[#d4deef] transition hover:border-rose-400 hover:text-rose-200"
+          >
+            Sair
+          </button>
+        </div>
       </header>
 
       {(error || info) && (

@@ -78,6 +78,23 @@ export async function listPublishedPosts(limit = 12): Promise<CMSPost[]> {
   return sortByDateDesc(normalized).filter(matchPublished).slice(0, limit)
 }
 
+/** Busca em textos publicados (título, resumo, conteúdo). */
+export async function searchPublishedPosts(query: string, limit = 24): Promise<CMSPost[]> {
+  if (!query || query.trim().length === 0) return []
+  const { data, error } = await supabase.from('posts').select('*')
+  if (error) throw error
+  const normalized = (data ?? []).map(row => normalizePost(row as UnknownRow))
+  const published = sortByDateDesc(normalized).filter(matchPublished)
+  const q = query.trim().toLowerCase()
+  const filtered = published.filter(
+    post =>
+      post.titulo.toLowerCase().includes(q) ||
+      (post.resumo ?? '').toLowerCase().includes(q) ||
+      (post.conteudo ?? '').toLowerCase().includes(q)
+  )
+  return filtered.slice(0, limit)
+}
+
 export async function listPostsByCategory(slug: string): Promise<CMSPost[]> {
   const normalized = slug.trim().toLowerCase()
   const { data, error } = await supabase.from('posts').select('*')

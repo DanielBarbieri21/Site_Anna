@@ -1,9 +1,19 @@
-import { Link, NavLink } from 'react-router-dom'
+import { useState, type FormEvent } from 'react'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../modules/auth/AuthContext'
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, signOut } = useAuth()
+  const navigate = useNavigate()
+  const [searchQuery, setSearchQuery] = useState('')
+
+  function handleSearch(e: FormEvent) {
+    e.preventDefault()
+    const q = searchQuery.trim()
+    if (q) navigate(`/busca?q=${encodeURIComponent(q)}`)
+    else navigate('/busca')
+  }
 
   return (
     <div className="min-h-screen text-[#ece8df]">
@@ -67,7 +77,43 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               Poesias
             </NavLink>
-            {user?.role === 'author' && (
+            <NavLink
+              to="/musica"
+              className={({ isActive }) =>
+                `rounded-full px-2.5 py-1.5 transition ${
+                  isActive
+                    ? 'bg-[#6a738f2e] font-medium text-[#f2eadc]'
+                    : 'text-[#b9c3d9] hover:text-[#f2eadc]'
+                }`
+              }
+            >
+              Música
+            </NavLink>
+            <NavLink
+              to="/fotos"
+              className={({ isActive }) =>
+                `rounded-full px-2.5 py-1.5 transition ${
+                  isActive
+                    ? 'bg-[#6a738f2e] font-medium text-[#f2eadc]'
+                    : 'text-[#b9c3d9] hover:text-[#f2eadc]'
+                }`
+              }
+            >
+              Fotos
+            </NavLink>
+            <NavLink
+              to="/videos"
+              className={({ isActive }) =>
+                `rounded-full px-2.5 py-1.5 transition ${
+                  isActive
+                    ? 'bg-[#6a738f2e] font-medium text-[#f2eadc]'
+                    : 'text-[#b9c3d9] hover:text-[#f2eadc]'
+                }`
+              }
+            >
+              Vídeos
+            </NavLink>
+            {user && (
               <NavLink
                 to="/dashboard"
                 className={({ isActive }) =>
@@ -78,7 +124,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   }`
                 }
               >
-                Painel
+                Publicar
               </NavLink>
             )}
             {user ? (
@@ -103,6 +149,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </NavLink>
             )}
           </nav>
+        </div>
+        <div className="container-page border-t border-slate-700/40 py-3">
+          <form onSubmit={handleSearch} className="flex max-w-xl">
+            <input
+              type="search"
+              placeholder="Buscar textos por título ou palavra-chave..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="input-surface w-full rounded-l-full rounded-r-none border-r-0 px-4 py-2.5 text-sm outline-none ring-0 transition"
+              aria-label="Buscar"
+            />
+            <button
+              type="submit"
+              className="rounded-r-full border border-slate-600/70 border-l-0 bg-[#0d1627c0] px-4 py-2.5 text-xs font-medium uppercase tracking-[0.15em] text-[#d4deef] transition hover:border-[#baa78c91]"
+            >
+              Buscar
+            </button>
+          </form>
         </div>
       </header>
 

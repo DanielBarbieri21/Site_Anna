@@ -158,19 +158,6 @@ export function HomePage() {
         <aside className="space-y-8">
           <div>
             <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3b0c9]">
-              buscar
-            </h2>
-            <div className="mt-3">
-              <input
-                type="search"
-                placeholder="Busque por um título ou palavra-chave..."
-                className="input-surface w-full rounded-full px-4 py-2.5 text-sm outline-none ring-0 transition"
-              />
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3b0c9]">
               categorias
             </h2>
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
