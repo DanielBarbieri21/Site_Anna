@@ -22,8 +22,27 @@ const initialState: EditorState = {
   resumo: '',
   conteudo: '',
   categoria: 'contos',
-  publicado: false,
+  publicado: true,
   tempoLeitura: '6',
+}
+
+function formatError(error: unknown, fallback: string): string {
+  if (!error || typeof error !== 'object') return fallback
+
+  const maybe = error as {
+    message?: string
+    details?: string
+    hint?: string
+    code?: string
+  }
+
+  const parts = [maybe.message, maybe.details, maybe.hint].filter(
+    value => typeof value === 'string' && value.trim().length > 0
+  ) as string[]
+
+  if (parts.length === 0) return fallback
+  const codePrefix = maybe.code ? `[${maybe.code}] ` : ''
+  return `${codePrefix}${parts.join(' | ')}`
 }
 
 export function DashboardPage() {
@@ -49,7 +68,7 @@ export function DashboardPage() {
       setPosts(data)
     } catch (err) {
       console.error(err)
-      setError('Não foi possível carregar os posts do CMS.')
+      setError(formatError(err, 'Não foi possível carregar os posts do CMS.'))
     } finally {
       setLoadingPosts(false)
     }
@@ -92,7 +111,7 @@ export function DashboardPage() {
       setInfo('Post excluído com sucesso.')
     } catch (err) {
       console.error(err)
-      setError('Falha ao excluir o post.')
+      setError(formatError(err, 'Falha ao excluir o post.'))
     }
   }
 
@@ -136,7 +155,7 @@ export function DashboardPage() {
       setEditor(initialState)
     } catch (err) {
       console.error(err)
-      setError('Falha ao salvar no CMS. Confira as colunas da tabela posts.')
+      setError(formatError(err, 'Falha ao salvar no CMS.'))
     } finally {
       setSaving(false)
     }
@@ -262,7 +281,7 @@ export function DashboardPage() {
                   setEditor(prev => ({ ...prev, publicado: event.target.checked }))
                 }
               />
-              Publicado
+              Publicado (aparece no inicio)
             </label>
           </div>
 

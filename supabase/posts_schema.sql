@@ -1,16 +1,41 @@
 -- Execute este script no SQL Editor do Supabase para habilitar o CMS.
+create extension if not exists pgcrypto;
+
 create table if not exists public.posts (
-  id uuid primary key default gen_random_uuid(),
-  autor_id uuid not null references auth.users(id) on delete cascade,
-  titulo text not null,
-  resumo text,
-  conteudo text not null,
-  categoria text not null default 'contos',
-  publicado boolean not null default false,
-  tempo_leitura integer,
-  created_at timestamptz not null default timezone('utc', now()),
-  updated_at timestamptz not null default timezone('utc', now())
+  id uuid primary key default gen_random_uuid()
 );
+
+-- Compatibilidade: adiciona colunas caso a tabela ja exista com schema antigo.
+alter table public.posts
+  add column if not exists autor_id uuid references auth.users(id) on delete cascade,
+  add column if not exists titulo text,
+  add column if not exists resumo text,
+  add column if not exists conteudo text,
+  add column if not exists categoria text default 'contos',
+  add column if not exists publicado boolean default false,
+  add column if not exists tempo_leitura integer,
+  add column if not exists created_at timestamptz default timezone('utc', now()),
+  add column if not exists updated_at timestamptz default timezone('utc', now());
+
+-- Backfill para registros antigos sem datas.
+update public.posts
+set created_at = timezone('utc', now())
+where created_at is null;
+
+update public.posts
+set updated_at = timezone('utc', now())
+where updated_at is null;
+
+-- Corrige FK antiga que pode apontar para public.users.
+alter table public.posts drop constraint if exists posts_autor_fk;
+alter table public.posts drop constraint if exists posts_autor_id_fkey;
+
+alter table public.posts
+  add constraint posts_autor_fk
+  foreign key (autor_id)
+  references auth.users(id)
+  on delete cascade
+  not valid;
 
 create index if not exists posts_autor_id_idx on public.posts (autor_id);
 create index if not exists posts_publicado_idx on public.posts (publicado, created_at desc);

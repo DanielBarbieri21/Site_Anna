@@ -7,16 +7,37 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependency directories
 node_modules
+
+# Build outputs
 dist
 dist-ssr
+
+# Local env files (keep secrets out of git)
+.env
+.env.*
+!.env.example
+
+# Local-only misc files
 *.local
+.cache
+.tmp
+
+# Test and coverage
+coverage
+*.lcov
+
+# TypeScript cache
+*.tsbuildinfo
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
+.history
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj

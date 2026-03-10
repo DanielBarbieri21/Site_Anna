@@ -1,7 +1,10 @@
 import { Link, NavLink } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useAuth } from '../modules/auth/AuthContext'
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { user, signOut } = useAuth()
+
   return (
     <div className="min-h-screen text-[#ece8df]">
       <header className="sticky top-0 z-30 border-b border-slate-700/60 bg-[#090d16]/85 backdrop-blur-xl">
@@ -64,12 +67,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               Dashboard
             </NavLink>
-            <NavLink
-              to="/login"
-              className="mysterious-pill rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] transition hover:brightness-110"
-            >
-              Entrar
-            </NavLink>
+            {user ? (
+              <div className="flex items-center gap-2">
+                <span className="rounded-full border border-slate-600/70 px-3 py-1.5 text-[11px] uppercase tracking-[0.13em] text-[#d3dcee]">
+                  {user.email ?? 'logado'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => void signOut()}
+                  className="rounded-full border border-rose-500/60 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-rose-200 transition hover:border-rose-400"
+                >
+                  Sair
+                </button>
+              </div>
+            ) : (
+              <NavLink
+                to="/login"
+                className="mysterious-pill rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] transition hover:brightness-110"
+              >
+                Entrar
+              </NavLink>
+            )}
           </nav>
         </div>
       </header>
