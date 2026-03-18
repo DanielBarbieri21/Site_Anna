@@ -74,6 +74,7 @@ export function HomePage() {
   }, [posts])
 
   const highlightPost = recentPosts[0]
+  const highlightHref = `/post/${highlightPost?.slug ?? highlightPost?.id}`
 
   return (
     <div className="space-y-10">
@@ -96,26 +97,32 @@ export function HomePage() {
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-[#a3b0c9]">
             em destaque
           </p>
-          <motion.div
-            whileHover={{ y: -4 }}
-            className="card-surface cursor-pointer space-y-3"
+          <Link
+            to={highlightHref}
+            aria-label={`Abrir: ${highlightPost?.titulo ?? 'post em destaque'}`}
+            className="block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#baa78c91] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1220]"
           >
-            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-[#d2c0a0]">
-              postagem recente
-            </p>
-            <h2 className="text-2xl font-semibold leading-snug text-[#f6efe2]">
-              {highlightPost?.titulo ?? 'No corredor das janelas acesas'}
-            </h2>
-            <p className="text-sm text-[#b2bed6]">
-              {highlightPost?.resumo ??
-                'Uma breve história sobre noites insones, apartamentos silenciosos e as vidas que piscam por trás de cada janela.'}
-            </p>
-            <div className="flex items-center gap-3 text-[11px] text-[#8f9bb5]">
-              <span>Anna</span>
-              <span>•</span>
-              <span>{highlightPost?.tempo_leitura ?? 7} min de leitura</span>
-            </div>
-          </motion.div>
+            <motion.div
+              whileHover={{ y: -4 }}
+              className="card-surface space-y-3 transition will-change-transform hover:border-[#baa78c91]"
+            >
+              <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-[#d2c0a0]">
+                postagem recente
+              </p>
+              <h2 className="text-2xl font-semibold leading-snug text-[#f6efe2]">
+                {highlightPost?.titulo ?? 'No corredor das janelas acesas'}
+              </h2>
+              <p className="text-sm text-[#b2bed6]">
+                {highlightPost?.resumo ??
+                  'Uma breve história sobre noites insones, apartamentos silenciosos e as vidas que piscam por trás de cada janela.'}
+              </p>
+              <div className="flex items-center gap-3 text-[11px] text-[#8f9bb5]">
+                <span>Anna</span>
+                <span>•</span>
+                <span>{highlightPost?.tempo_leitura ?? 7} min de leitura</span>
+              </div>
+            </motion.div>
+          </Link>
         </div>
       </section>
 
